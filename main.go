@@ -1,9 +1,7 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"os"
 
 	"dbtui/internal/database"
 	"dbtui/internal/render"
@@ -47,7 +45,6 @@ func main() {
 	// }
 
 	if _, err := p.Run(); err != nil {
-		fmt.Printf("Alas, there's been an error: %v", err)
-		os.Exit(1)
+		log.Printf("Error during render: %v", err)
 	}
 }

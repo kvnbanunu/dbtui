@@ -1,15 +1,16 @@
-TARGET = bin/main
+TARGET = bin/dbtui
 MAIN = main.go
 DB_PATH = ./sqlite.db
-FLAGS = -seed $(DB_PATH)
+FLAGS = $(DB_PATH)
 
-all: clean build
-
-build:
+build: clean
 	go build $(MAIN) -o $(TARGET)
 
 run:
 	go run $(MAIN) $(FLAGS)
+
+seed:
+	go run $(MAIN) $(FLAGS) -seed
 
 clean:
 	rm -rf bin
