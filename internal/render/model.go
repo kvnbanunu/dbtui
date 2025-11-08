@@ -30,25 +30,5 @@ func InitialModel(db *database.DB) (Model, error) {
 }
 
 func (m Model) Init() tea.Cmd {
-	// Just return 'nil', which means "no I/O right now, please."
 	return nil
-}
-
-func (m Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	switch msg := msg.(type) {
-	// Is it a key press?
-	case tea.KeyMsg:
-		key := msg.String()
-		switch m.state {
-		case fullView:
-			switch key {
-			case "q":
-				return m, tea.Quit
-			}
-		}
-	}
-
-	// Return the updated model to the Bubble Tea runtime for processing.
-	// Note that we're not returning a command.
-	return m, nil
 }

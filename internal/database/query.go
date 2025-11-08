@@ -1,6 +1,10 @@
 package database
 
-import "fmt"
+import (
+	"fmt"
+
+	_ "modernc.org/sqlite"
+)
 
 type Table struct {
 	Name string `db:"name"`
@@ -10,7 +14,7 @@ func (db *DB) GetTables() ([]Table, error) {
 	var tables []Table
 
 	query := `SELECT name FROM sqlite_master
-	WHERE type='table' and name != 'sqlite_sequence';
+	WHERE type='table' AND name NOT LIKE 'sqlite_%';
 	`
 
 	rows, err := db.Query(query)

@@ -13,7 +13,7 @@ func (m Model) View() string {
 	s := "Database Tables\n"
 
 	for i, t := range m.tables {
-		s += fullViewStyle.Render(fmt.Sprintf("%d: %s\n", i, t.Name))
+		s += fullViewStyle.Render(fmt.Sprintf("%d: %s", i, t.Name)) + "\n"
 	}
 
 	// The footer

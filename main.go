@@ -5,8 +5,8 @@ import (
 	"log"
 	"os"
 
-	"dbtui/internal/render"
 	"dbtui/internal/database"
+	"dbtui/internal/render"
 	"dbtui/internal/utils"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -21,26 +21,30 @@ func main() {
 
 	defer db.Close()
 
-	err = db.InsertDummy()
-	if err != nil {
-		log.Fatalln("Error inserting dummy data:", err)
+	if args.Seed {
+		err = db.CheckEmpty()
+		if err != nil {
+			db.Close()
+			log.Fatalln("Error checking database:", err)
+		}
 	}
 
 	initialModel, err := render.InitialModel(db)
 	if err != nil {
+		db.Close()
 		log.Fatalln("Error getting initial model:", err)
 	}
 
 	p := tea.NewProgram(initialModel)
 
-	if len(os.Getenv("DEBUG")) > 0 {
-		f, err := tea.LogToFile("debug.log", "debug")
-		if err != nil {
-			fmt.Println("fatal:", err)
-			os.Exit(1)
-		}
-		defer f.Close()
-	}
+	// if len(os.Getenv("DEBUG")) > 0 {
+	// 	f, err := tea.LogToFile("debug.log", "debug")
+	// 	if err != nil {
+	// 		fmt.Println("fatal:", err)
+	// 		os.Exit(1)
+	// 	}
+	// 	defer f.Close()
+	// }
 
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
