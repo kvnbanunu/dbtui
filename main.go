@@ -2,18 +2,31 @@ package main
 
 import (
 	"fmt"
+	"log"
 	// "os"
 	//
 	// "dbtui/internal/render"
+	"dbtui/internal/database"
 	"dbtui/internal/utils"
-
 	// tea "github.com/charmbracelet/bubbletea"
 )
 
 func main() {
 	args := utils.ParseArgs()
 
-	fmt.Println(args.DBPath)
+	db, err := database.Init(args.DBPath)
+	if err != nil {
+		log.Fatalln("Error opening database:", err)
+	}
+
+	err = db.InsertDummy()
+	if err != nil {
+		log.Fatalln("Error inserting dummy data:", err)
+	}
+
+	defer db.Close()
+
+	fmt.Println("Database opened")
 	// p := tea.NewProgram(
 	// 	render.InitialModel(),
 	// )
