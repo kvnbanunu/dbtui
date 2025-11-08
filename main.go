@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"dbtui/internal/database"
-	"dbtui/internal/render"
+	"dbtui/internal/models"
 	"dbtui/internal/utils"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -27,13 +27,13 @@ func main() {
 		}
 	}
 
-	initialModel, err := render.InitialModel(db)
-	if err != nil {
-		db.Close()
-		log.Fatalln("Error getting initial model:", err)
-	}
+	app := models.NewApp(db)
 
-	p := tea.NewProgram(initialModel)
+	p := tea.NewProgram(
+		app,
+		tea.WithAltScreen(),
+		tea.WithMouseCellMotion(),
+	)
 
 	// if len(os.Getenv("DEBUG")) > 0 {
 	// 	f, err := tea.LogToFile("debug.log", "debug")

@@ -5,12 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-
-	_ "modernc.org/sqlite"
 )
 
 func (db *DB) CheckEmpty() error {
-	tables, err := db.GetTables()
+	tables, err := db.ListTables()
 	if err != nil {
 		return err
 	}
