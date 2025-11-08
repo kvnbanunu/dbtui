@@ -14,9 +14,9 @@ type errMsg struct {
 	err error
 }
 
-func loadTablesCmd(db *database.DB) tea.Cmd {
+func loadTablesCmd(m *database.Manager) tea.Cmd {
 	return func() tea.Msg {
-		tables, err := db.ListTables()
+		tables, err := m.ListTables()
 		if err != nil {
 			return errMsg{err}
 		}

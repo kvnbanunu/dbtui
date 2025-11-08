@@ -7,8 +7,8 @@ import (
 	"strings"
 )
 
-func (db *DB) CheckEmpty() error {
-	tables, err := db.ListTables()
+func (m *Manager) CheckEmpty() error {
+	tables, err := m.ListTables()
 	if err != nil {
 		return err
 	}
@@ -25,7 +25,7 @@ func (db *DB) CheckEmpty() error {
 
 	fmt.Println("Seeding database with test data...")
 
-	err = db.execSeed()
+	err = m.execSeed()
 	if err != nil {
 		return err
 	}
@@ -58,7 +58,7 @@ Do you want to continue? (y/N): `
 	return true, nil
 }
 
-func (db *DB) execSeed() error {
+func (m *Manager) execSeed() error {
 	query := `PRAGMA foreign_keys = OFF;
 
 DROP TABLE IF EXISTS order_items;
@@ -208,7 +208,7 @@ INSERT INTO categories (name, description, parent_category_id) VALUES
     ('Office', 'Office furniture', 2);
 `
 
-	if _, err := db.Exec(query); err != nil {
+	if _, err := m.db.Exec(query); err != nil {
 		return err
 	}
 

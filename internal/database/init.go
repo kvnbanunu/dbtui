@@ -7,11 +7,12 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type DB struct {
-	*sql.DB
+type Manager struct {
+	db   *sql.DB
+	path string
 }
 
-func Init(path string) (*DB, error) {
+func NewManager(path string) (*Manager, error) {
 	db, err := sql.Open("sqlite", path)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to open database: %w", err)
@@ -21,11 +22,11 @@ func Init(path string) (*DB, error) {
 		return nil, fmt.Errorf("Failed to ping database: %w", err)
 	}
 
-	conn := &DB{db}
+	m := &Manager{db: db, path: path}
 
-	return conn, nil
+	return m, nil
 }
 
-func (db *DB) Close() error {
-	return db.DB.Close()
+func (m *Manager) Close() error {
+	return m.db.Close()
 }

@@ -12,22 +12,22 @@ import (
 func main() {
 	args := utils.ParseArgs()
 
-	db, err := database.Init(args.DBPath)
+	manager, err := database.NewManager(args.DBPath)
 	if err != nil {
 		log.Fatalln("Error opening database:", err)
 	}
 
-	defer db.Close()
+	defer manager.Close()
 
 	if args.Seed {
-		err = db.CheckEmpty()
+		err = manager.CheckEmpty()
 		if err != nil {
-			db.Close()
+			manager.Close()
 			log.Fatalln("Error checking database:", err)
 		}
 	}
 
-	app := models.NewApp(db)
+	app := models.NewApp(manager)
 
 	p := tea.NewProgram(
 		app,

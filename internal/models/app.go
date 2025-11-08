@@ -3,14 +3,16 @@ package models
 import (
 	"dbtui/internal/database"
 
+	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
 )
 
 type App struct {
-	store *database.DB
-	state State
+	store *database.Manager
+	state State // focused
+	help  help.Model
 	err   error
 	// tabsModel      tabs      // disply tableInfo or tableData
 	// tableInfoModel tableInfo // table metadata
@@ -21,15 +23,17 @@ type App struct {
 	ready          bool
 }
 
-func NewApp(db *database.DB) App {
-
+func NewApp(m *database.Manager) App {
 	tl := newTableList()
+	help := help.New()
+	help.ShowAll = true
 
 	return App{
-		store: db,
-		state: stateTableList,
+		store:          m,
+		state:          stateTableList,
+		help:           help,
 		tableListModel: tl,
-		ready: false,
+		ready:          false,
 	}
 }
 
