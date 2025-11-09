@@ -16,20 +16,13 @@ type App struct {
 	help           help.Model
 	err            error
 	tableListModel tableList
-	tableDataModel tableData // table content
-	queryModel     queryModel
-	tabsModel      tabsModel // disply tableInfo or tableData or query
-	width          int
-	height         int
-	ready          bool
-	// tableInfoModel tableInfo // table metadata
+	tableModel     model
+	width  int
+	height int
+	ready  bool
 }
 
 func NewApp(m *database.Manager) App {
-	tl := newTableList()
-	td := newTableData()
-	q := newQueryModel()
-	tabs := newTabsModel()
 	help := help.New()
 	help.ShowAll = false
 
@@ -37,11 +30,9 @@ func NewApp(m *database.Manager) App {
 		store:          m,
 		state:          stateTableList,
 		help:           help,
-		tableListModel: tl,
-		tableDataModel: td,
-		queryModel:     q,
-		tabsModel:      tabs,
-		ready:          false,
+		tableListModel: newTableList(),
+		tableModel:     newModel(m),
+		ready: false,
 	}
 }
 
@@ -53,6 +44,8 @@ func (a App) Init() tea.Cmd {
 }
 
 func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var mod tea.Model
+	var cmd tea.Cmd
 	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
@@ -62,16 +55,14 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.ready = true
 
 		helpHeight := lipgloss.Height(a.help.View(keys))
-		tabsHeight := lipgloss.Height(a.tabsModel.View()) + 2
 		contentHeight := msg.Height - helpHeight - 2
 
 		listWidth := msg.Width * 30 / 100
-		contentWidth := msg.Width - listWidth - 2
+		contentWidth := msg.Width - listWidth
 
 		// update all sub models with new dimensions
 		a.tableListModel.setSize(listWidth, contentHeight)
-		a.tableDataModel.setSize(contentWidth, contentHeight - tabsHeight)
-		a.queryModel.setSize(contentWidth, contentHeight - tabsHeight)
+		a.tableModel.setSize(contentWidth, contentHeight)
 
 	case tea.KeyMsg:
 		switch {
@@ -95,52 +86,23 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.tableListModel.setTables(msg.tables)
 
 	case tableSelectedMsg:
-		a.state = stateTableData
-		a.tableDataModel.setTable(msg.tableName)
+		a.state = stateTableView
 		cmds = append(cmds, loadTableDataCmd(a.store, msg.tableName, 0))
-
-	case switchTabMsg:
-		a.state = State(msg.activeTab)
-
-	case tableDataLoadedMsg:
-		a.tableDataModel.setData(msg.columns, msg.rows)
-
-	case queryResultMsg:
-		a.queryModel.setResults(msg.columns, msg.rows, msg.err)
 
 	case errMsg:
 		a.err = msg.err
 	}
 
-
-	var model tea.Model
-	var cmd tea.Cmd
 	switch a.state {
 	case stateTableList:
-		model, cmd = a.tableListModel.Update(msg)
-		a.tableListModel = model.(tableList)
+		mod, cmd = a.tableListModel.Update(msg)
+		a.tableListModel = mod.(tableList)
 		cmds = append(cmds, cmd)
 
-	case stateTableData, stateTableInfo:
-		model, cmd = a.tabsModel.Update(msg)
-		a.tabsModel = model.(tabsModel)
+	case stateTableView:
+		mod, cmd = a.tableModel.Update(msg)
+		a.tableModel = mod.(model)
 		cmds = append(cmds, cmd)
-		model, cmd = a.tableDataModel.Update(msg)
-		a.tableDataModel = model.(tableData)
-		cmds = append(cmds, cmd)
-
-	case stateQuery:
-		model, cmd = a.tabsModel.Update(msg)
-		a.tabsModel = model.(tabsModel)
-		cmds = append(cmds, cmd)
-		model, cmd = a.queryModel.Update(msg)
-		a.queryModel = model.(queryModel)
-		cmds = append(cmds, cmd)
-
-	// case stateTableInfo:
-	// 	model, cmd = a.tabsModel.Update(msg)
-	// 	a.tabsModel = model.(tabsModel)
-	// 	cmds = append(cmds, cmd)
 	}
 
 	return a, tea.Batch(cmds...)
@@ -152,16 +114,6 @@ func (a App) View() string {
 	}
 
 	var content string
-	var selected string
-
-	switch a.state {
-	case stateTableData:
-		selected = a.tableDataModel.View()
-	case stateTableInfo:
-		selected = a.tableDataModel.View()
-	case stateQuery:
-		selected = a.queryModel.View()
-	}
 
 	content = lipgloss.JoinHorizontal(
 		lipgloss.Top,
@@ -170,8 +122,7 @@ func (a App) View() string {
 			Padding(0, 1).
 			Render(lipgloss.JoinVertical(
 				lipgloss.Left,
-				a.tabsModel.View(),
-				selected,
+				a.tableModel.View(),
 			)),
 	)
 
@@ -185,10 +136,10 @@ func (a App) View() string {
 func (a App) nextState() State {
 	switch a.state {
 	case stateTableList:
-		return stateTableData
-	case stateTableData:
-		return stateTableData
+		return stateTableView
+	case stateTableView:
+		return stateTableView
 	default:
-		return stateTableList
+		return stateTableView
 	}
 }
