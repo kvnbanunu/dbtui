@@ -5,6 +5,8 @@ This is a solo project submitted to BCIT HTTPHacks 2025 Hackathon
 
 Best used with a terminal font <= 14 and fullscreen
 
+![](./public/screenshot.png)
+
 ## Dependencies
 
 - go 1.25.3
