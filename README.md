@@ -9,6 +9,7 @@ Best used with a terminal font <= 14 and fullscreen
 
 - go 1.25.3
 - make (*optional building with make)
+- (sqlite does not need to be installed)
 
 ## Quickstart
 
@@ -32,6 +33,8 @@ Planned Features
 - Delete tables/columns/rows
 
 ## Usage
+
+This program has only been tested on Linux
 
 Option 1 Build from source
 
@@ -72,3 +75,31 @@ dbtui [OPTIONS] <DB PATH>
 
 - [-h] Displays a help message
 - [-seed] Seeds database with test data
+
+## Controls
+
+Global
+- quit: ctrl-c/q
+- help: ?
+
+List View
+- move up: ↑/k
+- move down: ↓/j
+- filter: /
+- select row: Enter
+
+Table View
+- switch tabs: ←/h →/l tab
+- move up: ↑/k
+- move down: ↓/j
+- edit row: e (Data tab only)
+- back to List View: esc
+
+Query View
+- run query: Enter
+- reset: ctrl-z
+
+Row Edit Form
+- move down: Enter
+- move up: shift+tab
+- submit: y (must be at the bottom of the form)
