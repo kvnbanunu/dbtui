@@ -25,11 +25,11 @@ Completed Features
 - View tables
 - Edit rows
 - Seed test data
+- Execute custom queries
 
 Planned Features
 - Add new tables/columns/rows
 - Delete tables/columns/rows
-- Execute custom queries (The functions exist but are not wired up)
 
 ## Usage
 

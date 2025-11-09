@@ -60,4 +60,5 @@ func (m *model) setDataTable(tableName string, columns []database.Column, rows [
 	m.dataTable.SetRows(tableRows)
 	m.dataTable.GotoTop()
 	m.dataTable.Focus()
+	m.setInfoTable()
 }

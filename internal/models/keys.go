@@ -80,5 +80,6 @@ func (k keyMap) FullHelp() [][]key.Binding {
 		{k.Enter, k.Back},
 		{k.Tab, k.Help},
 		{k.Filter, k.Quit},
+		{k.Edit, k.Reset},
 	}
 }

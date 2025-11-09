@@ -23,6 +23,7 @@ const (
 )
 
 type model struct {
+	store       *database.Manager
 	focus       bool
 	tabs        []string
 	activeTab   tab
@@ -30,6 +31,7 @@ type model struct {
 	columns     []database.Column
 	selectedRow []string
 	dataTable   table.Model
+	infoTable   table.Model
 	queryInput  textinput.Model
 	queryTable  table.Model
 	queryResult [][]string
@@ -42,19 +44,21 @@ type model struct {
 	height      int
 }
 
-func newModel() model {
+func newModel(m *database.Manager) model {
 	ti := textinput.New()
 	ti.Placeholder = "SELECT * FROM table_name"
 	ti.Focus()
 	ti.Width = 50
 
 	return model{
+		store:      m,
 		focus:      false,
 		tabs:       []string{"Data", "Info", "Query"},
 		activeTab:  dataTab,
 		dataTable:  newTable(),
 		queryInput: ti,
 		queryTable: newTable(),
+		infoTable:  newTable(),
 		form:       nil,
 	}
 }
@@ -75,7 +79,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch m.activeTab {
-		case dataTab, infoTab:
+		case dataTab:
 			switch {
 			case key.Matches(msg, keys.Left):
 				m.activeTab = max(m.activeTab-1, dataTab)
@@ -86,6 +90,15 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			case key.Matches(msg, keys.Edit):
 				return m, selectRowCmd(m.dataTable.SelectedRow())
 			}
+		case infoTab:
+			switch {
+			case key.Matches(msg, keys.Left):
+				m.activeTab = max(m.activeTab-1, dataTab)
+			case key.Matches(msg, keys.Right):
+				m.activeTab = min(m.activeTab+1, tab(len(m.tabs)-1))
+			case key.Matches(msg, keys.Tab):
+				m.activeTab = m.nextTab()
+			}
 		case queryTab:
 			switch {
 			case key.Matches(msg, keys.Left):
@@ -94,6 +107,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.activeTab = min(m.activeTab+1, tab(len(m.tabs)-1))
 			case key.Matches(msg, keys.Tab):
 				m.activeTab = m.nextTab()
+			case key.Matches(msg, keys.Enter):
+				return m, execQueryCmd(m.store, m.queryInput.Value())
 			case key.Matches(msg, keys.Reset):
 				m.queryInput.Reset()
 				return m, nil
@@ -112,8 +127,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	}
 
 	switch m.activeTab {
-	case dataTab, infoTab:
+	case dataTab:
 		m.dataTable, cmd = m.dataTable.Update(msg)
+		cmds = append(cmds, cmd)
+	case infoTab:
+		m.infoTable, cmd = m.infoTable.Update(msg)
 		cmds = append(cmds, cmd)
 	case queryTab:
 		m.queryInput, cmd = m.queryInput.Update(msg)
@@ -169,8 +187,10 @@ func (m model) View() string {
 
 	var selected string
 	switch m.activeTab {
-	case dataTab, infoTab:
+	case dataTab:
 		selected = m.dataView()
+	case infoTab:
+		selected = m.infoView()
 	case queryTab:
 		selected = m.queryView()
 	case editTab:

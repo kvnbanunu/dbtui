@@ -29,14 +29,14 @@ type App struct {
 
 func NewApp(m *database.Manager) App {
 	help := help.New()
-	help.ShowAll = false
+	help.ShowAll = true
 
 	return App{
 		store:          m,
 		focus:          listView,
 		help:           help,
 		tableListModel: newTableList(),
-		tableModel:     newModel(),
+		tableModel:     newModel(m),
 		ready:          false,
 	}
 }
@@ -78,6 +78,7 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case key.Matches(msg, keys.Back):
 			if a.focus != listView {
 				a.focus = listView
+				a.tableListModel.setFocus(true)
 			}
 			return a, nil
 
@@ -103,11 +104,13 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case listView:
 		mod, cmd = a.tableListModel.Update(msg)
 		a.tableListModel = mod.(tableList)
+		a.tableListModel.setFocus(true)
 		cmds = append(cmds, cmd)
 
 	case tableView:
 		mod, cmd = a.tableModel.Update(msg)
 		a.tableModel = mod.(model)
+		a.tableListModel.setFocus(false)
 		cmds = append(cmds, cmd)
 	}
 

@@ -4,13 +4,15 @@ import (
 	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/lipgloss"
 )
 
 type tableList struct {
-	list     list.Model // list of table names
-	tables   []string
-	width    int
-	height   int
+	focus  bool
+	list   list.Model // list of table names
+	tables []string
+	width  int
+	height int
 }
 
 // implements list.Item interface
@@ -24,8 +26,13 @@ func newTableList() tableList {
 	list := list.New([]list.Item{}, list.NewDefaultDelegate(), 0, 0)
 	list.SetShowHelp(false)
 	return tableList{
+		focus: true,
 		list: list,
 	}
+}
+
+func (tl *tableList) setFocus(f bool) {
+	tl.focus = f
 }
 
 func (tl *tableList) setTables(tables []string) {
@@ -67,5 +74,23 @@ func (tl tableList) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (tl tableList) View() string {
-	return tl.list.View()
+	style := lipgloss.NewStyle()
+	
+	if tl.focus {
+		style = style.
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("62")). // Blue when focused
+			Padding(0, 1)
+	} else {
+		style = style.
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("240")). // Gray when not focused
+			Padding(0, 1)
+	}
+	
+	return style.Render(tl.list.View())
 }
+
+// func (tl tableList) View() string {
+// 	return tl.list.View()
+// }
