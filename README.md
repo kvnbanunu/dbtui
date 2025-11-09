@@ -1,6 +1,8 @@
 # dbtui
 SQLite database manager in your terminal
 
+This is a solo project submitted to BCIT HTTPHacks 2025 Hackathon
+
 ## Dependencies
 
 - go 1.25.3
