@@ -16,12 +16,12 @@ func (m *model) formView() string {
 		return "Success!"
 	default:
 		v := strings.TrimSuffix(m.form.View(), "\n\n")
-		form := lipgloss.NewStyle().Margin(1, 0).Render(v)
+		form := lipgloss.NewStyle().Render(v)
 
 		errors := m.form.Errors()
-		header := "Edit Entry"
+		header := m.appBoundaryView("Edit Entry")
 		if len(errors) > 0 {
-			header = fmt.Sprintf("Error: %v", errors[0])
+			header = m.appErrorBoundaryView(m.errorView())
 		}
 		return header + "\n" + form
 	}
@@ -50,8 +50,8 @@ func (m *model) onRowSelect(row []string) {
 			inputs,
 			huh.NewInput().
 				Key(col.Name).
-				Title(col.Name).
-				Description(col.Type).
+				Title(fmt.Sprintf("%s: (%s)", col.Name, col.Type)).
+				// Description(col.Type).
 				Placeholder(row[i]).
 				Value(&m.toEdit[i]).
 				Validate(func(str string) error {
@@ -76,5 +76,33 @@ func (m *model) onRowSelect(row []string) {
 
 	m.form = huh.NewForm(
 		huh.NewGroup(inputs...),
+	).WithWidth(45)
+}
+
+func (m model) errorView() string {
+	var s string
+	for _, err := range m.form.Errors() {
+		s += err.Error()
+	}
+	return s
+}
+
+func (m model) appBoundaryView(text string) string {
+	return lipgloss.PlaceHorizontal(
+		m.width -2,
+		lipgloss.Left,
+		formHeaderText.Render(text),
+		// lipgloss.WithWhitespaceChars("/"),
+		// lipgloss.WithWhitespaceForeground(indigo),
+	)
+}
+
+func (m model) appErrorBoundaryView(text string) string {
+	return lipgloss.PlaceHorizontal(
+		m.width -2,
+		lipgloss.Left,
+		formErrorHeaderText.Render(text),
+		// lipgloss.WithWhitespaceChars("/"),
+		// lipgloss.WithWhitespaceForeground(red),
 	)
 }

@@ -1,25 +1,22 @@
 # dbtui
 SQLite database manager in your terminal
 
-
 ## Dependencies
 
 - go 1.25.3
 - make (*optional building with make)
 
-## How to run
-
-Option 1 Install to GO bin
+## Quickstart
 
 ```sh
-go install github.com/kvnbanunu/dbtui
-
-dbtui [OPTIONS] <DB PATH>
+git clone https://github.com/kvnbanunu/dbtui.git
+cd dbtui
+go run main.go -seed ./sqlite.db
 ```
 
----
+## Usage
 
-Option 2 Build from source
+Option 1 Build from source
 
 ```sh
 git clone https://github.com/kvnbanunu/dbtui.git
@@ -35,13 +32,23 @@ cd <BUILD PATH>
 
 ---
 
-Option 3 Run without building
+Option 2 Run without building
 
 ```sh
 git clone https://github.com/kvnbanunu/dbtui.git
 cd dbtui
 
 go run main.go [OPTIONS] <DB PATH>
+```
+
+---
+
+Option 3 Install to GO bin
+
+```sh
+go install github.com/kvnbanunu/dbtui
+
+dbtui [OPTIONS] <DB PATH>
 ```
 
 ## Options
