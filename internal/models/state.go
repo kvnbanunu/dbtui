@@ -3,10 +3,10 @@ package models
 type State uint
 
 const (
-	stateTableList State = iota
+	stateTableData State = iota
 	stateTableInfo
-	stateTableData
 	stateQuery
+	stateTableList
 )
 
 func (s State) String() string {

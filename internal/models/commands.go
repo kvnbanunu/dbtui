@@ -25,8 +25,23 @@ type queryResultMsg struct {
 	err     error
 }
 
+type rowSelectedMsg struct {
+	tableName string
+	row       []string
+}
+
+type switchTabMsg struct {
+	activeTab int // should match states
+}
+
 type errMsg struct {
 	err error
+}
+
+func switchTabCmd(t tab) tea.Cmd {
+	return func() tea.Msg {
+		return switchTabMsg{activeTab: int(t)}
+	}
 }
 
 func loadTablesCmd(m *database.Manager) tea.Cmd {
@@ -58,6 +73,15 @@ func loadTableDataCmd(m *database.Manager, tableName string, offset int) tea.Cmd
 		}
 
 		return tableDataLoadedMsg{columns, rows}
+	}
+}
+
+func selectRowCmd(tableName string, row []string) tea.Cmd {
+	return func() tea.Msg {
+		return rowSelectedMsg{
+			tableName: tableName,
+			row:       row,
+		}
 	}
 }
 

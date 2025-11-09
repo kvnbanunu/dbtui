@@ -5,6 +5,7 @@ import (
 
 	"dbtui/internal/database"
 
+	"github.com/charmbracelet/bubbles/key"
 	"github.com/charmbracelet/bubbles/table"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
@@ -18,6 +19,7 @@ type tableData struct {
 	table       table.Model
 	tableName   string
 	columns     []database.Column
+	selectedRow  []string
 	currentPage int
 	width       int
 	height      int
@@ -60,7 +62,7 @@ func (td *tableData) setData(columns []database.Column, rows [][]string) {
 	// convert cols to bubbles
 	tableCols := make([]table.Column, len(columns))
 	for i, col := range columns {
-		width := 15
+		width := 10
 		if len(col.Name) > width {
 			width = len(col.Name) + 2
 		}
@@ -80,7 +82,7 @@ func (td *tableData) setData(columns []database.Column, rows [][]string) {
 	}
 
 	td.table.SetRows(tableRows)
-	td.table.SetHeight(td.height - 5)
+	td.table.SetHeight(td.height)
 
 	td.table.GotoTop()
 
@@ -91,11 +93,18 @@ func (td *tableData) setSize(width, height int) {
 	td.width = width
 	td.height = height
 	td.table.SetWidth(width)
-	td.table.SetHeight(height - 5)
+	td.table.SetHeight(height)
 }
 
 func (td tableData) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	var cmd tea.Cmd
+	switch msg := msg.(type) {
+	case tea.KeyMsg:
+		switch {
+		case key.Matches(msg, keys.Edit):
+			td.selectedRow = td.table.SelectedRow()
+		}
+	}
 	td.table, cmd = td.table.Update(msg)
 	return td, cmd
 }
