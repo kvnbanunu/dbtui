@@ -10,7 +10,7 @@ run:
 	go run $(MAIN) $(FLAGS)
 
 seed:
-	go run $(MAIN) $(FLAGS) -seed
+	go run $(MAIN) -seed $(FLAGS)
 
 clean:
 	rm -rf bin

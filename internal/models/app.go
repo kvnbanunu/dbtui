@@ -10,16 +10,21 @@ import (
 	"github.com/charmbracelet/lipgloss"
 )
 
+const (
+	listView int = iota
+	tableView
+)
+
 type App struct {
 	store          *database.Manager
-	state          State // focused
+	focus          int // focused
 	help           help.Model
 	err            error
 	tableListModel tableList
 	tableModel     model
-	width  int
-	height int
-	ready  bool
+	width          int
+	height         int
+	ready          bool
 }
 
 func NewApp(m *database.Manager) App {
@@ -28,11 +33,11 @@ func NewApp(m *database.Manager) App {
 
 	return App{
 		store:          m,
-		state:          stateTableList,
+		focus:          listView,
 		help:           help,
 		tableListModel: newTableList(),
-		tableModel:     newModel(m),
-		ready: false,
+		tableModel:     newModel(),
+		ready:          false,
 	}
 }
 
@@ -67,17 +72,15 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.KeyMsg:
 		switch {
 		case key.Matches(msg, keys.Quit):
+			a.store.Close()
 			return a, tea.Quit
 
-		case key.Matches(msg, keys.Tab):
-			a.state = a.nextState()
-			return a, nil
-
 		case key.Matches(msg, keys.Back):
-			if a.state != stateTableList {
-				a.state = stateTableList
+			if a.focus != listView {
+				a.focus = listView
 			}
 			return a, nil
+
 		case key.Matches(msg, keys.Help):
 			a.help.ShowAll = !a.help.ShowAll
 			return a, nil
@@ -86,20 +89,23 @@ func (a App) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		a.tableListModel.setTables(msg.tables)
 
 	case tableSelectedMsg:
-		a.state = stateTableView
+		a.focus = tableView
 		cmds = append(cmds, loadTableDataCmd(a.store, msg.tableName, 0))
+
+	case editSubmitMsg:
+		cmds = append(cmds, execEditCmd(a.store, msg))
 
 	case errMsg:
 		a.err = msg.err
 	}
 
-	switch a.state {
-	case stateTableList:
+	switch a.focus {
+	case listView:
 		mod, cmd = a.tableListModel.Update(msg)
 		a.tableListModel = mod.(tableList)
 		cmds = append(cmds, cmd)
 
-	case stateTableView:
+	case tableView:
 		mod, cmd = a.tableModel.Update(msg)
 		a.tableModel = mod.(model)
 		cmds = append(cmds, cmd)
@@ -113,33 +119,15 @@ func (a App) View() string {
 		return "Loading..."
 	}
 
-	var content string
-
-	content = lipgloss.JoinHorizontal(
+	content := lipgloss.JoinHorizontal(
 		lipgloss.Top,
 		a.tableListModel.View(),
-		lipgloss.NewStyle().
-			Padding(0, 1).
-			Render(lipgloss.JoinVertical(
-				lipgloss.Left,
-				a.tableModel.View(),
-			)),
+		a.tableModel.View(),
 	)
 
 	return lipgloss.JoinVertical(
-		lipgloss.Left,
+		lipgloss.Center,
 		content,
 		a.help.View(keys),
 	)
-}
-
-func (a App) nextState() State {
-	switch a.state {
-	case stateTableList:
-		return stateTableView
-	case stateTableView:
-		return stateTableView
-	default:
-		return stateTableView
-	}
 }

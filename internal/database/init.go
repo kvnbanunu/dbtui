@@ -19,12 +19,14 @@ func NewManager(path string) (*Manager, error) {
 	}
 
 	if err := db.Ping(); err != nil {
+		db.Close()
 		return nil, fmt.Errorf("Failed to ping database: %w", err)
 	}
 
-	m := &Manager{db: db, path: path}
-
-	return m, nil
+	return &Manager{
+		db: db,
+		path: path,
+	}, nil
 }
 
 func (m *Manager) Close() error {

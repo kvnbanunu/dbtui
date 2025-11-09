@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -331,6 +332,41 @@ func (m *Manager) ExecuteQuery(query string) ([]string, [][]string, error) {
 	return cols, res, nil
 }
 
+func (m *Manager) EditRow(tableName, id string, columns []Column, row []string) error {
+	query := "UPDATE %s SET %s WHERE id = ?"
+
+	parts := make([]string, len(columns))
+	args := make([]any, len(columns) + 1)
+
+	for i, col := range columns {
+		parts[i] = fmt.Sprintf("%s = ?", quoteIdentifier(col.Name))
+		args[i] = stringToValue(col.Type, row[i])
+	}
+
+	args[len(columns)] = id
+
+	query = fmt.Sprintf(
+		query, quoteIdentifier(tableName),
+		strings.Join(parts, ", "),
+	)
+
+	res, err := m.db.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("No rows affected")
+	}
+	
+	return nil
+}
+
 func extractRows(rows *sql.Rows, cols []string) ([][]string, error) {
 	var res [][]string
 	for rows.Next() {
@@ -391,6 +427,45 @@ func valToString(val any) string {
 	default: // shouldn't reach
 		return fmt.Sprintf("%v", v)
 	}
+}
+
+func stringToValue(colType string, value string) any {
+	// Handle NULL
+	if value == "" || value == "NULL" {
+		return nil
+	}
+	
+	typeUpper := strings.ToUpper(colType)
+	
+	// INTEGER types
+	if strings.Contains(typeUpper, "INT") {
+		if v, err := strconv.ParseInt(value, 10, 64); err == nil {
+			return v
+		}
+	}
+	
+	// REAL/FLOAT types
+	if strings.Contains(typeUpper, "REAL") || 
+	   strings.Contains(typeUpper, "FLOAT") || 
+	   strings.Contains(typeUpper, "DOUBLE") ||
+	   strings.Contains(typeUpper, "DECIMAL") {
+		if v, err := strconv.ParseFloat(value, 64); err == nil {
+			return v
+		}
+	}
+	
+	// BOOLEAN (SQLite stores as INTEGER 0/1)
+	if strings.Contains(typeUpper, "BOOL") {
+		if value == "true" || value == "1" || value == "TRUE" {
+			return 1
+		}
+		if value == "false" || value == "0" || value == "FALSE" {
+			return 0
+		}
+	}
+	
+	// Default to TEXT
+	return value
 }
 
 // formats bytes into readable format

@@ -27,22 +27,18 @@ type queryResultMsg struct {
 }
 
 type rowSelectedMsg struct {
-	tableName string
-	row       []string
+	row []string
 }
 
-type switchTabMsg struct {
-	activeTab tab // should match states
+type editSubmitMsg struct {
+	tableName string
+	id        string
+	columns   []database.Column
+	row       []string
 }
 
 type errMsg struct {
 	err error
-}
-
-func switchTabCmd(t tab) tea.Cmd {
-	return func() tea.Msg {
-		return switchTabMsg{activeTab: t}
-	}
 }
 
 func loadTablesCmd(m *database.Manager) tea.Cmd {
@@ -77,12 +73,32 @@ func loadTableDataCmd(m *database.Manager, tableName string, offset int) tea.Cmd
 	}
 }
 
-func selectRowCmd(tableName string, row []string) tea.Cmd {
+func selectRowCmd(row []string) tea.Cmd {
 	return func() tea.Msg {
 		return rowSelectedMsg{
-			tableName: tableName,
-			row:       row,
+			row: row,
 		}
+	}
+}
+
+func editSubmitCmd(tableName, id string, columns []database.Column, row []string) tea.Cmd {
+	return func() tea.Msg {
+		return editSubmitMsg{
+			tableName: tableName,
+			id: id,
+			columns: columns,
+			row: row,
+		}
+	}
+}
+
+func execEditCmd(m *database.Manager, msg editSubmitMsg) tea.Cmd {
+	return func() tea.Msg {
+		err := m.EditRow(msg.tableName, msg.id, msg.columns, msg.row)
+		if err != nil {
+			return errMsg{err: err}
+		}
+		return tableSelectedMsg{msg.tableName}
 	}
 }
 

@@ -5,8 +5,8 @@ import "github.com/charmbracelet/bubbles/key"
 type keyMap struct {
 	Up     key.Binding
 	Down   key.Binding
-	Left key.Binding
-	Right key.Binding
+	Left   key.Binding
+	Right  key.Binding
 	Quit   key.Binding
 	Back   key.Binding
 	Enter  key.Binding
@@ -14,6 +14,7 @@ type keyMap struct {
 	Help   key.Binding
 	Filter key.Binding
 	Edit   key.Binding
+	Reset  key.Binding
 }
 
 var keys = keyMap{
@@ -47,7 +48,7 @@ var keys = keyMap{
 	),
 	Tab: key.NewBinding(
 		key.WithKeys("tab"),
-		key.WithHelp("tab", "switch tab"),
+		key.WithHelp("tab/←/h/→/l", "switch tab"),
 	),
 	Help: key.NewBinding(
 		key.WithKeys("?"),
@@ -61,6 +62,10 @@ var keys = keyMap{
 		key.WithKeys("e"),
 		key.WithHelp("e", "edit"),
 	),
+	Reset: key.NewBinding(
+		key.WithKeys("ctrl+z"),
+		key.WithHelp("ctrl+z", "undo"),
+	),
 }
 
 // returns mini help view
@@ -71,15 +76,9 @@ func (k keyMap) ShortHelp() []key.Binding {
 // returns expanded help view
 func (k keyMap) FullHelp() [][]key.Binding {
 	return [][]key.Binding{
-		{k.Up},
-		{k.Down},
-		{k.Left},
-		{k.Right},
-		{k.Tab},
-		{k.Back},
-		{k.Enter},
-		{k.Help},
-		{k.Filter},
-		{k.Quit},
+		{k.Up, k.Down},
+		{k.Enter, k.Back},
+		{k.Tab, k.Help},
+		{k.Filter, k.Quit},
 	}
 }
