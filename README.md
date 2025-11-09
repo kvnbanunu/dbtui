@@ -13,6 +13,7 @@ git clone https://github.com/kvnbanunu/dbtui.git
 cd dbtui
 go run main.go -seed ./sqlite.db
 ```
+![](./public/example.gif)
 
 ## Usage
 
