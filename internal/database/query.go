@@ -153,9 +153,7 @@ func (m *Manager) GetTableData(tableName string, limit, offset int) ([][]string,
 		return nil, fmt.Errorf("Failed to get columns: %w", err)
 	}
 
-	var res [][]string
-
-	err = extractRows(rows, cols, res)
+	res, err := extractRows(rows, cols)
 	if err != nil {
 		return nil, err
 	}
@@ -231,8 +229,7 @@ func (m *Manager) SearchTable(tableName, term string, limit, offset int) ([][]st
 		return nil, fmt.Errorf("Failed to get columns: %w", err)
 	}
 
-	var res [][]string
-	err = extractRows(rows, cols2, res)
+	res, err := extractRows(rows, cols2)
 	if err != nil {
 		return nil, err
 	}
@@ -327,15 +324,15 @@ func (m *Manager) ExecuteQuery(query string) ([]string, [][]string, error) {
 		return nil, nil, fmt.Errorf("Failed to ge columns: %w", err)
 	}
 
-	var res [][]string
-	err = extractRows(rows, cols, res)
+	res, err := extractRows(rows, cols)
 	if err != nil {
 		return nil, nil, err
 	}
 	return cols, res, nil
 }
 
-func extractRows(rows *sql.Rows, cols []string, res [][]string) error {
+func extractRows(rows *sql.Rows, cols []string) ([][]string, error) {
+	var res [][]string
 	for rows.Next() {
 		values := make([]any, len(cols))
 		valuePtrs := make([]any, len(cols))
@@ -344,7 +341,7 @@ func extractRows(rows *sql.Rows, cols []string, res [][]string) error {
 		}
 
 		if err := rows.Scan(valuePtrs...); err != nil {
-			return fmt.Errorf("failed to scan row: %w", err)
+			return nil, fmt.Errorf("failed to scan row: %w", err)
 		}
 
 		row := make([]string, len(cols))
@@ -356,10 +353,10 @@ func extractRows(rows *sql.Rows, cols []string, res [][]string) error {
 	}
 
 	if err := rows.Err(); err != nil {
-		return fmt.Errorf("error iterating rows: %w", err)
+		return nil, fmt.Errorf("error iterating rows: %w", err)
 	}
 
-	return nil
+	return res, nil
 }
 
 // replaces any quotes in the name with double quotes (SQLite escape)

@@ -6,6 +6,7 @@ const (
 	stateTableList State = iota
 	stateTableInfo
 	stateTableData
+	stateQuery
 )
 
 func (s State) String() string {
@@ -16,6 +17,8 @@ func (s State) String() string {
 		return "Table Info"
 	case stateTableData:
 		return "Table Data"
+	case stateQuery:
+		return "Query"
 	default:
 		return "Unknown"
 	}
