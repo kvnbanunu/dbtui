@@ -15,6 +15,18 @@ go run main.go -seed ./sqlite.db
 ```
 ![](./public/example.gif)
 
+## Features
+
+Completed Features
+- View tables
+- Edit rows
+- Seed test data
+
+Planned Features
+- Add new tables/columns/rows
+- Delete tables/columns/rows
+- Execute custom queries (The functions exist but are not wired up)
+
 ## Usage
 
 Option 1 Build from source
