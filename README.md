@@ -1,7 +1,7 @@
 # dbtui
 SQLite database manager in your terminal
 
-Solo project and winner of Best UI/UX at [BCIT HTTPHacks 2025](https://httphacks.devpost.com/) Hackathon [devpost](https://devpost.com/software/dbtui)
+Solo project and winner of Best UI/UX at [BCIT HTTPHacks 2025](https://httphacks.devpost.com/) Hackathon [\[devpost\]](https://devpost.com/software/dbtui)
 
 Best used with a terminal font <= 14 and fullscreen
 
